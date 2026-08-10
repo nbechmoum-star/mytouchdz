@@ -68,7 +68,7 @@ const PRODUCT_DETAILS = {
     {
       id: 1,
       qty: 1,
-      price: 5"4000,
+      price: "4000,
       originalPrice: 5200
       freeDelivery: false,
       title: 'قطعة واحدة',
