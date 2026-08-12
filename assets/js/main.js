@@ -55,6 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Phone / call link
     document.getElementById('call-link').href = `tel:${d.phones.callLink}`;
+    document.getElementById('whatsapp-link').href = d.phones.whatsapp;
+    document.getElementById('whatsapp-fab').href = d.phones.whatsapp;
 
     // Starting price (shown next to the title, before a package is picked)
     const basePackage = d.packages.find(p => p.active) || d.packages[0];

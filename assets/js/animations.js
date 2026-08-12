@@ -215,4 +215,134 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   })();
+
+  // ── 7) Floating WhatsApp button: pop in, then a soft radar-style ping ─
+  (function whatsappFab() {
+    const fab = document.querySelector('.whatsapp-fab');
+    if (!fab) return;
+
+    anime.set(fab, { scale: 0 });
+    anime({
+      targets: fab,
+      scale: [0, 1],
+      duration: 500,
+      delay: 900,
+      easing: 'easeOutBack',
+      complete: () => {
+        clearInlineStyle(fab, ['transform']);
+
+        // Radar "ping" ring — a temporary element, purely decorative,
+        // removed from the DOM after each pulse (never affects layout).
+        const ring = document.createElement('span');
+        ring.setAttribute('aria-hidden', 'true');
+        ring.style.cssText = 'position:absolute;inset:0;border-radius:50%;background:#25d366;pointer-events:none;';
+        fab.style.position = 'fixed'; // already fixed via CSS; keep JS in sync
+        fab.appendChild(ring);
+
+        anime({
+          targets: ring,
+          scale: [1, 1.9],
+          opacity: [0.55, 0],
+          duration: 1600,
+          easing: 'easeOutSine',
+          loop: true,
+        });
+      },
+    });
+  })();
+
+  // ── 8) On-scroll reveal for the delivery options and details/summary ─
+  (function sectionsOnScroll() {
+    if (!('IntersectionObserver' in window)) return;
+    const targets = [
+      document.querySelector('.delivery-section'),
+      document.querySelector('.summary'),
+    ].filter(Boolean);
+    if (!targets.length) return;
+
+    const observer = new IntersectionObserver((entries, obs) => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const el = entry.target;
+        anime.set(el, { opacity: 0, translateY: 20 });
+        anime({
+          targets: el,
+          opacity: [0, 1],
+          translateY: [20, 0],
+          duration: 600,
+          easing: EASE,
+          complete: () => clearInlineStyle(el, ['opacity', 'transform']),
+        });
+        obs.unobserve(el);
+      });
+    }, { threshold: 0.2 });
+
+    targets.forEach(el => observer.observe(el));
+  })();
+
+  // ── 9) Animated price count-up whenever the selected package changes ─
+  //     (purely visual — main.js still owns which package is selected)
+  (function priceCountUp() {
+    const priceTargets = [
+      document.getElementById('product-price'),
+      document.getElementById('sticky-product-price'),
+      document.getElementById('mobile-buy-price'),
+    ].filter(Boolean);
+    if (!priceTargets.length) return;
+
+    priceTargets.forEach(el => {
+      let lastValue = parseInt(el.textContent, 10) || 0;
+      const mo = new MutationObserver(() => {
+        const text = el.textContent || '';
+        const newValue = parseInt(text, 10);
+        if (!Number.isFinite(newValue) || newValue === lastValue) return;
+        const suffix = text.replace(/^[0-9]+/, ''); // e.g. " دج" / "دج"
+        const from = { val: lastValue };
+        lastValue = newValue;
+        mo.disconnect(); // avoid reacting to our own writes below
+        anime({
+          targets: from,
+          val: newValue,
+          duration: 450,
+          easing: 'easeOutCubic',
+          round: 1,
+          update: () => { el.textContent = `${from.val}${suffix}`; },
+          complete: () => mo.observe(el, { childList: true, characterData: true, subtree: true }),
+        });
+      });
+      mo.observe(el, { childList: true, characterData: true, subtree: true });
+    });
+  })();
+
+  // ── 10) Buy button: subtle periodic "shine" sweep to draw the eye ────
+  (function buyButtonShine() {
+    const btn = document.querySelector('.buy-btn');
+    if (!btn) return;
+
+    // A clipping mask sized to the button (so the sweep stays inside its
+    // rounded shape) — kept separate from .buy-btn's own overflow, which
+    // must stay visible for the price-tag ribbon to poke outside it.
+    const clip = document.createElement('span');
+    clip.setAttribute('aria-hidden', 'true');
+    clip.style.cssText = 'position:absolute;inset:0;overflow:hidden;border-radius:inherit;pointer-events:none;';
+
+    const shine = document.createElement('span');
+    shine.style.cssText = [
+      'position:absolute', 'top:0', 'bottom:0', 'left:-40%', 'width:35%',
+      'background:linear-gradient(115deg, transparent, rgba(255,255,255,.35), transparent)',
+    ].join(';');
+
+    clip.appendChild(shine);
+    btn.appendChild(clip);
+
+    anime({
+      targets: shine,
+      translateX: ['0%', '260%'],
+      duration: 1300,
+      easing: 'easeInOutSine',
+      loop: true,
+      delay: 2000,
+      endDelay: 2600, // pause between sweeps so it stays subtle, not gimmicky
+    });
+  })();
 });
