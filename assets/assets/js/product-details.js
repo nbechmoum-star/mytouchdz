@@ -70,7 +70,7 @@ const PRODUCT_DETAILS = {
     {
       id: 1,
       qty: 1,
-      price: 3500,
+      price: 1000,
       originalPrice: 4200,
       freeDelivery: false,
       title: 'قطعة واحدة',
